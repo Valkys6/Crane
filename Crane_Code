@@ -1,0 +1,45 @@
+#include <Wire.h>
+#include <Adafruit_MotorShield.h>
+#include <Adafruit_PWMServoDriver.h>
+#include <Joystick.h>
+
+Adafruit_MotorShield AFMS = Adafruit_MotorShield();
+Adafruit_StepperMotor *myMotor1 = AFMS.getStepper(200, 1);
+Adafruit_StepperMotor *myMotor2 = AFMS.getStepper(200, 2);
+
+Joystick_ joystick(A0, A1, 2);
+
+// Constant that maps the physical pin to the joystick button.
+const int pinToButtonMap = 2;
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Projekt Jerab");
+  joystick.begin();
+  joystick.setXAxisRange(0, 1023);
+  joystick.setYAxisRange(0, 1023);
+  AFMS.begin();  // create with the default frequency 1.6KHz
+  //AFMS.begin(1000);  // OR with a different frequency, say 1KHz
+}
+
+void loop() {
+  int xAxis = analogRead(A0); // Čtení hodnoty z osy X
+  int yAxis = analogRead(A1); // Čtení hodnoty z osy Y
+
+  // Vámi zvolený způsob mapování hodnot z joysticku na rychlost motorů
+  int motorSpeed1 = map(xAxis, 0, 1023, -200, 200);
+  int motorSpeed2 = map(yAxis, 0, 1023, -200, 200);
+
+  // Nastavte rychlost motorů
+  myMotor1->setSpeed(motorSpeed1);
+  myMotor1->step(motorSpeed1);
+  myMotor2->setSpeed(motorSpeed2);
+  myMotor1->step(motorSpeed2);
+
+  // Odeslat hodnoty na sériový port
+  Serial.print("X: ");
+  Serial.print(xAxis);
+  Serial.print(" Y: ");
+  Serial.println(yAxis);
+  delay(100); // Zpoždění pro snížení rychlosti odesílání dat
+}
